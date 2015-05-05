@@ -1,7 +1,13 @@
-require('config')
+config = nil
+package.loaded["config"] = nil
+
+config = require('config')
 
 
 function main(configuration)
+    config = nil
+    package.loaded["config"] = nil
+    
     wifi.setmode(wifi.STATION)
     wifi.sta.config(configuration)
 
@@ -11,9 +17,14 @@ function main(configuration)
 end
 
 
-configuration = config.getConfig()
-if configuration then
-    main(configuration)
-else
-    config.startConfigServer(main)
+for k, v in pairs(config) do
+    print(k)
+    print(v)
 end
+configuration = config.getConfig()
+config.startConfigServer(main)
+--if configuration then
+--    main(configuration)
+--else
+--    config.startConfigServer(main)
+--end

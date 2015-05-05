@@ -1,6 +1,29 @@
 local module = {}
 
 
+module.METHODS = {}
+module.METHODS.GET = 'get'
+module.METHODS.POST = 'post'
+
+
+function module.parseRequest(request_payload)
+    request = {}
+
+    lines = {}
+    request_payload.gsub("[^\r\n]+", function (l)
+        lines[#lines+1] = l
+    end)
+
+    request_line = lines[1]
+    matches = string.gmatch(request_line, "%S+")
+    request.method = matches():lower()
+    request.path = matches()
+
+    request.headers = {}
+    return request
+end
+
+
 function module.getResponseBody(response_payload)
     headers_end_index = response_payload:find("\r\n\r\n")
     if headers_end_index then
