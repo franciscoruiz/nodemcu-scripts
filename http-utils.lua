@@ -6,20 +6,16 @@ module.METHODS.GET = 'get'
 module.METHODS.POST = 'post'
 
 
-function module.parseRequest(request_payload)
+function module.parseRequest(requestPayload)
     request = {}
 
-    lines = {}
-    request_payload.gsub("[^\r\n]+", function (l)
-        lines[#lines+1] = l
-    end)
+    request_header, request.body = unpack(split(requestPayload, "\r\n\r\n"))
+    request_header_lines = split(request_header, "\r\n")
 
-    request_line = lines[1]
-    matches = string.gmatch(request_line, "%S+")
-    request.method = matches():lower()
-    request.path = matches()
+    request.method, request.path, request.protocol = unpack(split(request_header_lines[1], " "))
 
-    request.headers = {}
+    table.remove(request_header_lines, 1)
+    request.headers = request_header_lines
     return request
 end
 
@@ -50,6 +46,36 @@ function module.getResponseBodyJSON(response_payload)
         data = {}
     end
     return data
+end
+
+
+-- Utilities
+
+function split(str, separator)
+    return _split(str, separator, 1, {})
+end
+
+
+function _split(str, separator, start_index, partial_result)
+    if start_index >= #str then
+        return partial_result
+    end
+
+    sep_start, sep_end = str:find(separator, start_index, true)
+    if sep_start == nil then
+        sep_start = #str + 1
+        sep_end = sep_start
+    end
+
+    part = str:sub(start_index, sep_start)
+    append(partial_result, part)
+
+    return _split(str, separator, sep_end + 1, partial_result)
+end
+
+
+function append(array, element)
+    array[#array + 1] = element
 end
 
 

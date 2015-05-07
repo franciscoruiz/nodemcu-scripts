@@ -19,18 +19,18 @@ function module.getConfig()
         file.open(CONFIG_FILE_NAME, 'r')
     end
 
-    config_encoded = file.read()
+    configEncoded = file.read()
     file.close()
-    config = cjson.decode(config_encoded)
+    local config = cjson.decode(configEncoded)
     return config
 end
 
 
-function module.saveConfig(config)
-    config_encoded = cjson.encode(config)
-    print("Saving configuration: " .. config_encoded)
+function module.saveConfig(new_configuration)
+    configEncoded = cjson.encode(new_configuration)
+    print("Saving configuration: " .. configEncoded)
     file.open(CONFIG_FILE_NAME, 'w')
-    file.write(config_encoded)
+    file.write(configEncoded)
     file.close()
 end
 
@@ -47,10 +47,10 @@ function module.startConfigServer(callback)
             if request.method == http.METHODS.GET then
                 sendConfigForm(conn)
             else
-                config = parseConfigRequest(payload)  -- Assume it's valid
+                local userConfig = parseConfigRequest(payload)  -- Assume it's valid
                 configuration_server:close()
-                module.saveConfig(config)
-                callback(config)
+                module.saveConfig(userConfig)
+                callback(userConfig)
             end
         end)
         conn:on('sent', function (conn) conn:close() end)
@@ -60,15 +60,15 @@ end
 
 function sendConfigForm(conn)
     file.open('config-form.html', 'r')
-    form_file = file.read()
+    form = file.read()
     file.close()
-    conn:send(form_file)
+    conn:send(form)
 end
 
 
-function parseConfigRequest(request_payload)
-    request_data = http.getResponseBodyJSON(request_payload)
-    return request_payload;
+function parseConfigRequest(requestPayload)
+    request_data = http.getResponseBodyJSON(requestPayload)
+    return requestPayload;
 end
 
 
